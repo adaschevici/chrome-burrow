@@ -1,11 +1,11 @@
 SHELL := /bin/bash
 ENV_FILE ?= .env
-SCRIPT ?= basic
+STEALTH ?= basic
 
 .PHONY: up down logs rebuild ps health wsurl
 
 up:
-	SCRIPT=$(SCRIPT) docker compose --env-file $(ENV_FILE) up -d --build
+	STEALTH=$(STEALTH) docker compose --env-file $(ENV_FILE) up -d --build
 
 down:
 	docker compose --env-file $(ENV_FILE) down
