@@ -1,0 +1,43 @@
+name: chrome-cdp
+services:
+  chrome-headless:
+    build:
+      context: ./headless
+      args:
+        SCRIPT: ${SCRIPT:-basic.sh}
+    image: chrome-cdp:headless-${SCRIPT:-basic.sh}
+    container_name: chrome-headless-${SCRIPT:-basic.sh}
+    networks: [cdpnet]
+    ports:
+      - "${CDP_HOST_PORT}:${SOCAT_PORT}"
+    shm_size: "${HEADLESS_SHM_SIZE}"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://0.0.0.0:${SOCAT_PORT}/json/version"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  # chrome-gui:
+  #   build:
+  #     context: ./gui
+  #   image: chrome-cdp:gui
+  #   container_name: chrome-gui
+  #   networks: [cdpnet]
+  #   ports:
+  #     - "${CDP_PORT}:${CDP_PORT_GUI}"
+  #     - "${VNC_PORT}:5900"
+  #     - "${NOVNC_PORT}:6080"
+  #   shm_size: "${GUI_SHM_SIZE}"
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-fsS", "http://127.0.0.1:9222/json/version"]
+  #     interval: 10s
+  #     timeout: 3s
+  #     retries: 5
+  #     start_period: 15s
+
+networks:
+  cdpnet:
+    driver: bridge
