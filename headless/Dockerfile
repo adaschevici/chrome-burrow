@@ -45,8 +45,9 @@ RUN useradd -m -s /bin/bash chrome
 # Create directory for user data
 RUN mkdir -p /home/chrome/data && chown -R chrome:chrome /home/chrome
 
+ARG SCRIPT=basic
 # Copy the startup script from host
-COPY start-chrome.sh /usr/local/bin/start-chrome.sh
+COPY ${SCRIPT}.sh /usr/local/bin/start-chrome.sh
 
 # Make it executable and set ownership
 RUN chmod +x /usr/local/bin/start-chrome.sh && \
