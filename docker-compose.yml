@@ -4,9 +4,9 @@ services:
     build:
       context: ./headless
       args:
-        SCRIPT: ${STEALTH:-basic.sh}
-    image: chrome-cdp:headless-${STEALTH:-basic.sh}
-    container_name: chrome-headless-${STEALTH:-basic.sh}
+        STEALTH: ${STEALTH:-basic}
+    image: chrome-cdp:headless-stealth-${STEALTH:-basic}
+    container_name: chrome-headless-stealth-${STEALTH:-basic}
     networks: [cdpnet]
     ports:
       - "${CDP_HOST_PORT}:${SOCAT_PORT}"

@@ -18,11 +18,6 @@ rebuild-headless-bot:
 	docker compose --env-file $(ENV_FILE) build --no-cache
 	@rm	headless/start-chrome.sh
 
-rebuild-headless-bot:
-	@cp headless/start-chrome-bot.sh headless/start-chrome.sh
-	docker compose --env-file $(ENV_FILE) build --no-cache
-	@rm	headless/start-chrome.sh
-
 ps:
 	docker compose --env-file $(ENV_FILE) ps
 
@@ -36,8 +31,13 @@ wsurl:
 	@curl -s "http://127.0.0.1:$$(grep ^CDP_PORT_GUI $(ENV_FILE) | cut -d= -f2)/json/new?about:blank" | jq -r .webSocketDebuggerUrl
 
 verify-chrome-flags:
-	@echo "Checking Chrome flags in running container..."
-	docker exec $$(docker ps -q -f ancestor=chrome-cdp:headless-$(STEALTH)) sh -c \
+	@CONTAINER=$$(docker ps --filter "ancestor=chrome-cdp:headless-stealth-basic" --filter "ancestor=chrome-cdp:headless-stealth-advanced" -q | head -1); \
+	if [ -z "$$CONTAINER" ]; then \
+		echo "❌ No chrome-cdp:headless-* container running"; \
+		exit 1; \
+	fi; \
+	echo "Checking container: $$CONTAINER"; \
+	docker exec $$CONTAINER sh -c \
 		"cat /proc/\$$(pgrep -o chromium)/cmdline | tr '\0' '\n' | grep -E 'disable-blink-features|user-agent'" \
 		&& echo "✅ Stealth flags detected" \
 		|| echo "❌ No stealth flags"
