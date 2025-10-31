@@ -35,3 +35,9 @@ wsurl:
 	@curl -s "http://127.0.0.1:$$(grep ^CDP_PORT_HEADLESS $(ENV_FILE) | cut -d= -f2)/json/new?about:blank" | jq -r .webSocketDebuggerUrl
 	@curl -s "http://127.0.0.1:$$(grep ^CDP_PORT_GUI $(ENV_FILE) | cut -d= -f2)/json/new?about:blank" | jq -r .webSocketDebuggerUrl
 
+verify-chrome-flags:
+	@echo "Checking Chrome flags in running container..."
+	docker exec $$(docker ps -q -f ancestor=chrome-cdp:headless-$(STEALTH)) sh -c \
+		"cat /proc/\$$(pgrep -o chromium)/cmdline | tr '\0' '\n' | grep -E 'disable-blink-features|user-agent'" \
+		&& echo "✅ Stealth flags detected" \
+		|| echo "❌ No stealth flags"
