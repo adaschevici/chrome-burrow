@@ -5,8 +5,8 @@ services:
       context: ./headless
       args:
         STEALTH: ${STEALTH:-basic}
-    image: chrome-cdp:headless-stealth-${STEALTH:-basic}
-    container_name: chrome-headless-stealth-${STEALTH:-basic}
+    image: chrome-cdp:${MODE:-headless}-stealth-${STEALTH:-basic}
+    container_name: chrome-${MODE:-headless}-stealth-${STEALTH:-basic}
     networks: [cdpnet]
     ports:
       - "${CDP_HOST_PORT}:${SOCAT_PORT}"
@@ -19,24 +19,24 @@ services:
       retries: 5
       start_period: 10s
 
-  # chrome-gui:
-  #   build:
-  #     context: ./gui
-  #   image: chrome-cdp:gui
-  #   container_name: chrome-gui
-  #   networks: [cdpnet]
-  #   ports:
-  #     - "${CDP_PORT}:${CDP_PORT_GUI}"
-  #     - "${VNC_PORT}:5900"
-  #     - "${NOVNC_PORT}:6080"
-  #   shm_size: "${GUI_SHM_SIZE}"
-  #   restart: unless-stopped
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-fsS", "http://127.0.0.1:9222/json/version"]
-  #     interval: 10s
-  #     timeout: 3s
-  #     retries: 5
-  #     start_period: 15s
+  chrome-gui:
+    build:
+      context: ./gui
+    image: chrome-cdp:${MODE:-headless}-stealth-${STEALTH:-basic}
+    container_name: chrome-${MODE:-gui}-stealth-${STEALTH:-basic}
+    networks: [cdpnet]
+    ports:
+      - "${CDP_PORT}:${CDP_PORT_GUI}"
+      - "${VNC_PORT}:5900"
+      - "${NOVNC_PORT}:6080"
+    shm_size: "${GUI_SHM_SIZE}"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://0.0.0.0:${SOCAT_PORT}/json/version"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
 
 networks:
   cdpnet:

@@ -1,11 +1,12 @@
 SHELL := /bin/bash
 ENV_FILE ?= .env
 STEALTH ?= basic
+MODE ?= headless
 
 .PHONY: up down logs rebuild ps health wsurl
 
 up:
-	STEALTH=$(STEALTH) docker compose --env-file $(ENV_FILE) up -d --build
+	MODE=$(MODE) STEALTH=$(STEALTH) docker compose --env-file $(ENV_FILE) up chrome-$(MODE) -d --build
 
 down:
 	docker compose --env-file $(ENV_FILE) down
@@ -13,10 +14,8 @@ down:
 logs:
 	docker compose --env-file $(ENV_FILE) logs -f
 
-rebuild-headless-bot:
-	@cp headless/start-chrome-bot.sh headless/start-chrome.sh
-	docker compose --env-file $(ENV_FILE) build --no-cache
-	@rm	headless/start-chrome.sh
+rebuild:
+	MODE=$(MODE) STEALTH=$(STEALTH) docker compose --env-file $(ENV_FILE) build --no-cache chrome-$(MODE)
 
 ps:
 	docker compose --env-file $(ENV_FILE) ps
