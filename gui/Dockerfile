@@ -5,9 +5,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV CHROME_PORT=9222
 ENV SOCAT_PORT=9224
 ENV VNC_PORT=5900
-ENV NO_VNC_PORT=6080
+ENV NOVNC_PORT=6080
 
-# Install Chromium, socat, and dependencies
+# Install base dependencies
 RUN apt-get update && apt-get install -y \
   chromium \
   socat \
@@ -40,46 +40,43 @@ RUN apt-get update && apt-get install -y \
   ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 
+# Install VNC and GUI components
 RUN apt-get update && apt-get install -y --no-install-recommends \
-  gnupg supervisor \
-  xvfb x11vnc websockify fluxbox \
-  fonts-liberation fonts-noto fonts-noto-color-emoji \
-  libasound2 libatk-bridge2.0-0 libnspr4 libnss3 xdg-utils \
+  gnupg \
+  supervisor \
+  xvfb \
+  x11vnc \
+  websockify \
+  fluxbox \
+  git \
+  python3 \
+  python3-numpy \
   && rm -rf /var/lib/apt/lists/*
+
+# Install noVNC from source (most reliable method)
+RUN cd /opt && \
+  git clone --depth 1 https://github.com/novnc/noVNC.git && \
+  cd noVNC && \
+  ln -s vnc.html index.html
 
 # Create a non-root user
 RUN useradd -m -s /bin/bash chrome
 
-# Create directory for user data
-RUN mkdir -p /home/chrome/data && chown -R chrome:chrome /home/chrome
+# Create necessary directories with proper permissions
+RUN mkdir -p /home/chrome/data && \
+  mkdir -p /var/log/supervisor && \
+  chown -R chrome:chrome /home/chrome && \
+  chown -R chrome:chrome /var/log/supervisor
 
+# Copy startup script
 ARG STEALTH=basic
-# Copy the startup script from host
 COPY ${STEALTH}.sh /usr/local/bin/start-chrome.sh
-
-# Make it executable and set ownership
 RUN chmod +x /usr/local/bin/start-chrome.sh && \
   chown chrome:chrome /usr/local/bin/start-chrome.sh
 
+# Copy supervisord config
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# # Install Chromium (arm64-friendly)
-# RUN apt-get update && apt-get install -y --no-install-recommends \
-#   chromium \
-#   fonts-liberation fonts-noto fonts-noto-color-emoji \
-#   libasound2 libatk-bridge2.0-0 libnspr4 libnss3 xdg-utils \
-#   && ln -sf /usr/bin/chromium /usr/bin/google-chrome \
-#   && rm -rf /var/lib/apt/lists/*
-#
-# # non-root user
-# RUN useradd -m -u 10001 -s /usr/sbin/nologin chrome
-# USER chrome
-# WORKDIR /home/chrome
-# RUN mkdir -p /home/chrome/data
+EXPOSE ${SOCAT_PORT} ${VNC_PORT} ${NOVNC_PORT}
 
-USER root
-ADD supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-USER chrome
-
-EXPOSE ${SOCAT_PORT} ${VNC_PORT} ${NO_VNC_PORT}
-CMD ["supervisord","-n","-c","/etc/supervisor/conf.d/supervisord.conf"]
-
+CMD ["supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

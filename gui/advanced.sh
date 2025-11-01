@@ -1,6 +1,23 @@
 #!/bin/bash
 set -e
 
+echo "Waiting for X server..."
+
+# Wait for X server to be ready
+for i in {1..60}; do
+  if DISPLAY=:99 xdpyinfo >/dev/null 2>&1; then
+    echo "X server is ready!"
+    break
+  fi
+  echo "Waiting for X server... ($i/60)"
+  sleep 1
+done
+
+# Verify X server one more time
+if ! DISPLAY=:99 xdpyinfo >/dev/null 2>&1; then
+  echo "ERROR: X server not available after 60 seconds"
+  exit 1
+fi
 echo "Starting Chromium in STEALTH mode on port ${CHROME_PORT}..."
 echo "Socat will proxy to port ${SOCAT_PORT}..."
 
