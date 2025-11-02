@@ -20,7 +20,18 @@ fi
 
 echo "Starting Chromium..."
 # Start Chromium with a page loaded - this makes it accept DevTools connections
-chromium \
+# Check if chromium exists
+if ! command -v chromium &>/dev/null; then
+  echo "ERROR: chromium command not found!"
+  echo "Looking for chromium binary..."
+  find /usr -name "chromium*" -type f 2>/dev/null | head -5
+  exit 1
+fi
+
+CHROMIUM_BIN=$(which chromium)
+echo "Using Chromium at: $CHROMIUM_BIN"
+# Start Chromium with stealth flags
+exec $CHROMIUM_BIN \
   --no-sandbox \
   --disable-setuid-sandbox \
   --disable-dev-shm-usage \
