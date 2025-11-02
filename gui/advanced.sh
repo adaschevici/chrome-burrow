@@ -1,34 +1,84 @@
 #!/bin/bash
-set -e
+set -ex # Exit on error, print commands
 
-echo "Waiting for X server..."
+echo "========================================="
+echo "=== CHROMIUM STARTUP SCRIPT DEBUG ==="
+echo "========================================="
+echo "Timestamp: $(date)"
+echo "User: $(whoami)"
+echo "UID: $(id -u)"
+echo "Working directory: $(pwd)"
+echo "HOME: $HOME"
+echo "DISPLAY: $DISPLAY"
+echo "PATH: $PATH"
+echo "========================================="
 
-# Wait for X server to be ready
+# Set DISPLAY explicitly
+export DISPLAY=:99
+echo "Set DISPLAY to: $DISPLAY"
+
+# Test if xdpyinfo is available
+if ! command -v xdpyinfo &>/dev/null; then
+  echo "ERROR: xdpyinfo not found!"
+  exit 1
+fi
+
+echo "Checking for X server on $DISPLAY..."
+
+# Wait for X server
+X_READY=false
 for i in {1..60}; do
-  if DISPLAY=:99 xdpyinfo >/dev/null 2>&1; then
-    echo "X server is ready!"
+  echo "Attempt $i/60..."
+  if xdpyinfo -display $DISPLAY >/dev/null 2>&1; then
+    echo "✓ X server is responding!"
+    X_READY=true
     break
   fi
-  echo "Waiting for X server... ($i/60)"
   sleep 1
 done
 
-# Verify X server one more time
-if ! DISPLAY=:99 xdpyinfo >/dev/null 2>&1; then
-  echo "ERROR: X server not available after 60 seconds"
+if [ "$X_READY" = false ]; then
+  echo "ERROR: X server did not become ready after 60 seconds"
+  echo "Checking if Xvfb process is running:"
+  pgrep Xvfb
   exit 1
 fi
+
+# Show X server details
+echo "X server details:"
+xdpyinfo -display $DISPLAY | head -10
+
+# Check if chromium exists
+if ! command -v chromium &>/dev/null; then
+  echo "ERROR: chromium command not found!"
+  echo "Looking for chromium binary..."
+  find /usr -name "chromium*" -type f 2>/dev/null | head -5
+  exit 1
+fi
+
+CHROMIUM_BIN=$(which chromium)
+echo "Using Chromium at: $CHROMIUM_BIN"
+
+# Create data directory if it doesn't exist
+mkdir -p /home/chrome/data
+echo "Data directory ready: /home/chrome/data"
+
+echo ""
+echo "========================================="
+echo "=== LAUNCHING CHROMIUM ==="
+echo "========================================="
+echo ""
 echo "Starting Chromium in STEALTH mode on port ${CHROME_PORT}..."
 echo "Socat will proxy to port ${SOCAT_PORT}..."
 
 # Start Chromium with stealth flags
-chromium \
+exec $CHROMIUM_BIN \
   --no-sandbox \
   --disable-setuid-sandbox \
   --disable-dev-shm-usage \
   --disable-gpu \
-  --headless=new \
   --remote-debugging-port="${CHROME_PORT}" \
+  --exclude-switches=enable-automation \
   --user-data-dir=/home/chrome/data \
   \
   `# Stealth: Disable automation detection` \
@@ -81,7 +131,7 @@ chromium \
   --enforce-webrtc-ip-permission-check \
   \
   `# Start with blank page` \
-  about:blank &
+  http://www.example.com &
 
 CHROME_PID=$!
 echo "Chromium started with PID $CHROME_PID"

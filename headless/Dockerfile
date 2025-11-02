@@ -8,6 +8,7 @@ ENV SOCAT_PORT=9223
 
 # Install Chromium, socat, and dependencies
 RUN apt-get update && apt-get install -y \
+  vim \
   chromium \
   socat \
   curl \

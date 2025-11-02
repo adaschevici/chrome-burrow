@@ -9,6 +9,7 @@ ENV NOVNC_PORT=6080
 
 # Install base dependencies
 RUN apt-get update && apt-get install -y \
+  vim \
   chromium \
   socat \
   curl \
