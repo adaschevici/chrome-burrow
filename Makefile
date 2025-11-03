@@ -31,7 +31,7 @@ wsurl:
 	@curl -s "http://127.0.0.1:$$(grep ^CDP_PORT_GUI $(ENV_FILE) | cut -d= -f2)/json/new?about:blank" | jq -r .webSocketDebuggerUrl
 
 verify-chrome-flags:
-	@CONTAINER=$$(docker ps --filter "ancestor=chrome-cdp:headless-stealth-basic" --filter "ancestor=chrome-cdp:headless-stealth-advanced" -q | head -1); \
+	@CONTAINER=$$(docker ps --filter "ancestor=chrome-cdp:debian-headless-stealth-basic" --filter "ancestor=chrome-cdp:debian-headless-stealth-advanced" --filter "ancestor=chrome-cdp:debian-gui-stealth-basic" --filter "ancestor=chrome-cdp:debian-gui-stealth-advanced" -q | head -1); \
 	if [ -z "$$CONTAINER" ]; then \
 		echo "❌ No chrome-cdp:headless-* container running"; \
 		exit 1; \
