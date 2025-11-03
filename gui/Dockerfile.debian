@@ -76,7 +76,7 @@ RUN chmod +x /usr/local/bin/start-chrome.sh && \
   chown chrome:chrome /usr/local/bin/start-chrome.sh
 
 # Copy supervisord config
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY supervisord.conf.debian /etc/supervisor/conf.d/supervisord.conf
 
 EXPOSE ${SOCAT_PORT} ${VNC_PORT} ${NOVNC_PORT}
 

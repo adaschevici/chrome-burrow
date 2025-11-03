@@ -3,6 +3,7 @@ services:
   chrome-headless:
     build:
       context: ./headless
+      dockerfile: Dockerfile.${DISTRO:-debian}
       args:
         STEALTH: ${STEALTH:-basic}
     image: chrome-cdp:${MODE:-headless}-stealth-${STEALTH:-basic}
@@ -22,6 +23,7 @@ services:
   chrome-gui:
     build:
       context: ./gui
+      dockerfile: Dockerfile.${DISTRO:-debian}
       args:
         STEALTH: ${STEALTH:-basic}
     image: chrome-cdp:${MODE:-headless}-stealth-${STEALTH:-basic}

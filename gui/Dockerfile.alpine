@@ -1,0 +1,90 @@
+FROM alpine:3.19
+
+# Default ports
+ENV CHROME_PORT=9222
+ENV SOCAT_PORT=9224
+ENV VNC_PORT=5900
+ENV NOVNC_PORT=6080
+
+# Install base dependencies and Chromium
+RUN apk add --no-cache \
+  # Core utilities
+  vim \
+  chromium \
+  socat \
+  curl \
+  net-tools \
+  iproute2 \
+  ca-certificates \
+  procps \
+  # Fonts
+  font-liberation \
+  font-noto \
+  font-noto-emoji \
+  font-noto-cjk \
+  # Chromium dependencies
+  libstdc++ \
+  harfbuzz \
+  nss \
+  freetype \
+  ttf-freefont \
+  wqy-zenhei \
+  # Audio/Video libraries
+  alsa-lib \
+  at-spi2-core \
+  cups-libs \
+  dbus-libs \
+  libdrm \
+  mesa-gbm \
+  libxcomposite \
+  libxdamage \
+  libxfixes \
+  libxkbcommon \
+  libxrandr \
+  wayland-libs-client \
+  # X11 libraries
+  libx11 \
+  libxext \
+  libxrender \
+  libxtst \
+  libxi
+
+# Install VNC and GUI components
+RUN apk add --no-cache \
+  supervisor \
+  xvfb \
+  x11vnc \
+  websockify \
+  fluxbox \
+  git \
+  python3 \
+  py3-numpy \
+  py3-pip
+
+# Install noVNC from source
+RUN cd /opt && \
+  git clone --depth 1 https://github.com/novnc/noVNC.git && \
+  cd noVNC && \
+  ln -s vnc.html index.html
+
+# Create a non-root user (Alpine uses adduser instead of useradd)
+RUN adduser -D -s /bin/sh chrome
+
+# Create necessary directories with proper permissions
+RUN mkdir -p /home/chrome/data && \
+  mkdir -p /var/log/supervisor && \
+  chown -R chrome:chrome /home/chrome && \
+  chown -R chrome:chrome /var/log/supervisor
+
+# Copy startup script
+ARG STEALTH=basic
+COPY ${STEALTH}.sh /usr/local/bin/start-chrome.sh
+RUN chmod +x /usr/local/bin/start-chrome.sh && \
+  chown chrome:chrome /usr/local/bin/start-chrome.sh
+
+# Copy supervisord config
+COPY supervisord.conf.alpine /etc/supervisor/conf.d/supervisord.conf
+
+EXPOSE ${SOCAT_PORT} ${VNC_PORT} ${NOVNC_PORT}
+
+CMD ["supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

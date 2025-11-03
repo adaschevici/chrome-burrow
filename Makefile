@@ -2,11 +2,12 @@ SHELL := /bin/bash
 ENV_FILE ?= .env
 STEALTH ?= basic
 MODE ?= headless
+DISTRO ?= debian
 
 .PHONY: up down logs rebuild ps health wsurl
 
 up:
-	MODE=$(MODE) STEALTH=$(STEALTH) docker compose --env-file $(ENV_FILE) up chrome-$(MODE) -d --build
+	DISTRO=$(DISTRO) MODE=$(MODE) STEALTH=$(STEALTH) docker compose --env-file $(ENV_FILE) up chrome-$(MODE) -d --build
 
 down:
 	docker compose --env-file $(ENV_FILE) down
@@ -15,7 +16,7 @@ logs:
 	docker compose --env-file $(ENV_FILE) logs -f
 
 rebuild:
-	MODE=$(MODE) STEALTH=$(STEALTH) docker compose --env-file $(ENV_FILE) build --no-cache chrome-$(MODE)
+	DISTRO=$(DISTRO) MODE=$(MODE) STEALTH=$(STEALTH) docker compose --env-file $(ENV_FILE) build --no-cache chrome-$(MODE)
 
 ps:
 	docker compose --env-file $(ENV_FILE) ps
