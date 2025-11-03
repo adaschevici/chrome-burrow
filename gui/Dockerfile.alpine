@@ -9,6 +9,7 @@ ENV NOVNC_PORT=6080
 # Install base dependencies and Chromium
 RUN apk add --no-cache \
   # Core utilities
+  bash \
   vim \
   chromium \
   socat \
@@ -17,6 +18,10 @@ RUN apk add --no-cache \
   iproute2 \
   ca-certificates \
   procps \
+  xdpyinfo \
+  xauth \
+  xprop \
+  xwininfo \
   # Fonts
   font-liberation \
   font-noto \
