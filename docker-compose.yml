@@ -4,8 +4,6 @@ x-chrome-common: &chrome-common
   image: chrome-cdp:${DISTRO:-debian}-${MODE:-headless}-stealth-${STEALTH:-basic}
   container_name: chrome-${DISTRO:-debian}-${MODE:-headless}-stealth-${STEALTH:-basic}
   networks: [cdpnet]
-  ports:
-    - "${CDP_HOST_PORT}:${SOCAT_PORT}"
   shm_size: "${HEADLESS_SHM_SIZE}"
   restart: unless-stopped
   healthcheck:
@@ -23,6 +21,8 @@ services:
       dockerfile: Dockerfile.${DISTRO:-debian}
       args:
         STEALTH: ${STEALTH:-basic}
+    ports:
+      - "${CDP_HOST_PORT}:${SOCAT_PORT}"
 
   chrome-gui:
     <<: *chrome-common
@@ -32,6 +32,7 @@ services:
       args:
         STEALTH: ${STEALTH:-basic}
     ports:
+      - "${CDP_HOST_PORT}:${SOCAT_PORT}"
       - "${VNC_PORT}:5900"
       - "${NOVNC_PORT}:6080"
 
