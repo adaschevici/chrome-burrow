@@ -18,32 +18,6 @@ export DISPLAY=:99
 echo "Set DISPLAY to: $DISPLAY"
 
 # Test if xdpyinfo is available
-if ! command -v xdpyinfo &>/dev/null; then
-  echo "ERROR: xdpyinfo not found!"
-  exit 1
-fi
-
-echo "Checking for X server on $DISPLAY..."
-
-# Wait for X server
-X_READY=false
-for i in {1..60}; do
-  echo "Attempt $i/60..."
-  if xdpyinfo -display $DISPLAY >/dev/null 2>&1; then
-    echo "✓ X server is responding!"
-    X_READY=true
-    break
-  fi
-  sleep 1
-done
-
-if [ "$X_READY" = false ]; then
-  echo "ERROR: X server did not become ready after 60 seconds"
-  echo "Checking if Xvfb process is running:"
-  pgrep Xvfb
-  exit 1
-fi
-
 # Show X server details
 echo "X server details:"
 xdpyinfo -display $DISPLAY | head -10
@@ -73,6 +47,7 @@ echo "Socat will proxy to port ${SOCAT_PORT}..."
 
 # Start Chromium with stealth flags
 exec $CHROMIUM_BIN \
+  --test-type \
   --no-sandbox \
   --disable-setuid-sandbox \
   --disable-dev-shm-usage \
@@ -94,7 +69,6 @@ exec $CHROMIUM_BIN \
   \
   `# Stealth: Enable features that real browsers have` \
   --enable-features=NetworkService,NetworkServiceInProcess \
-  --enable-automation=false \
   \
   `# Stealth: Disable suspicious features` \
   --disable-extensions \

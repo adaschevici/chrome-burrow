@@ -6,6 +6,8 @@ ENV CHROME_PORT=9222
 ENV SOCAT_PORT=9224
 ENV VNC_PORT=5900
 ENV NOVNC_PORT=6080
+# Disable the automation infobar
+ENV CHROME_AUTOMATION_INFOBAR=0
 
 # Install base dependencies
 RUN apt-get update && apt-get install -y \
@@ -74,7 +76,6 @@ ARG STEALTH=basic
 COPY ${STEALTH}.sh /usr/local/bin/start-chrome.sh
 RUN chmod +x /usr/local/bin/start-chrome.sh && \
   chown chrome:chrome /usr/local/bin/start-chrome.sh
-
 # Copy supervisord config
 COPY supervisord.conf.debian /etc/supervisor/conf.d/supervisord.conf
 

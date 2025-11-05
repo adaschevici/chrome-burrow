@@ -5,7 +5,8 @@ ENV CHROME_PORT=9222
 ENV SOCAT_PORT=9224
 ENV VNC_PORT=5900
 ENV NOVNC_PORT=6080
-
+# Disable the automation infobar
+ENV CHROME_AUTOMATION_INFOBAR=0
 # Install base dependencies and Chromium
 RUN apk add --no-cache \
   # Core utilities
@@ -87,6 +88,35 @@ COPY ${STEALTH}.sh /usr/local/bin/start-chrome.sh
 RUN chmod +x /usr/local/bin/start-chrome.sh && \
   chown chrome:chrome /usr/local/bin/start-chrome.sh
 
+# Create Chrome profile directory with proper settings
+RUN mkdir -p /home/chrome/.config/chromium/Default
+
+# Create Preferences file
+RUN echo '{ \
+  "profile": { \
+  "exit_type": "Normal", \
+  "exited_cleanly": true, \
+  "default_content_setting_values": { \
+  "notifications": 2 \
+  } \
+  }, \
+  "browser": { \
+  "check_default_browser": false, \
+  "should_reset_check_default_browser": false \
+  }, \
+  "distribution": { \
+  "skip_first_run_ui": true, \
+  "show_welcome_page": false, \
+  "import_search_engine": false, \
+  "import_history": false, \
+  "do_not_create_any_shortcuts": true, \
+  "do_not_create_taskbar_shortcut": true, \
+  "do_not_create_desktop_shortcut": true, \
+  "do_not_launch_chrome": true, \
+  "make_chrome_default": false \
+  }, \
+  "first_run_tabs": [ "about:blank" ] \
+  }' > /home/chrome/.config/chromium/Default/Preferences
 # Copy supervisord config
 COPY supervisord.conf.alpine /etc/supervisor/conf.d/supervisord.conf
 
