@@ -6,8 +6,6 @@ ENV CHROME_PORT=9222
 ENV SOCAT_PORT=9224
 ENV VNC_PORT=5900
 ENV NOVNC_PORT=6080
-# Disable the automation infobar
-ENV CHROME_AUTOMATION_INFOBAR=0
 
 # Install base dependencies
 RUN apt-get update && apt-get install -y \

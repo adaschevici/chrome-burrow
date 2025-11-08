@@ -105,6 +105,7 @@ exec $CHROMIUM_BIN \
   --enforce-webrtc-ip-permission-check \
   \
   `# Start with blank page` \
+  https://2captcha.com/demo/cloudflare-turnstile \
   http://www.example.com &
 
 CHROME_PID=$!
