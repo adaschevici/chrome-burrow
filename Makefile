@@ -8,7 +8,10 @@ DISTRO ?= debian
 CONTAINER_NAME ?= chromium
 COMPOSE_FILE ?= docker-compose.yml
 
-.PHONY: up down logs rebuild ps health wsurl
+.PHONY: health list-containers ps stats stats-all stats-live top \
+				ports ports-all ports-detailed logs logs-chrome logs-chrome-live \
+				shell rebuild up down chrome-version chrome-tabs chrome-health verify-chrome-flags \
+				restart-all stop-all wsurl
 
 # ============================================
 # Configuration
